@@ -49,7 +49,8 @@
 
             if (response.ok) {
                 const data = await response.json();
-                resultElement.textContent = `Male-to-Female Ratio: ${data.male_to_female_ratio.toFixed(2)}`;
+                resultElement.innerHTML = `Male-to-Female Ratio: ${data.male_to_female_ratio.toFixed(2)}<br>` +
+                                          `Female-to-Male Ratio: ${data.female_to_male_ratio.toFixed(2)}`;
             } else {
                 resultElement.textContent = "Error: Unable to process the request";
             }
