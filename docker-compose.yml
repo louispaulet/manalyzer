@@ -1,0 +1,9 @@
+version: "3.9"
+
+services:
+  manalyzer:
+    build: .
+    ports:
+      - "80:80"
+    volumes:
+      - "C:/Users/Louis Paulet/projets/femsaas-test/manalyzer:/app"

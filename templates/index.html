@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manalyzer</title>
+</head>
+<body>
+    <h1>Manalyzer - Gender Mention Ratio</h1>
+    <form id="analyze-form">
+        <label for="text-to-analyze">Enter text to analyze:</label>
+        <br>
+        <textarea id="text-to-analyze" name="text-to-analyze" rows="4" cols="50"></textarea>
+        <br>
+        <button type="submit">Analyze</button>
+    </form>
+    <h2>Result:</h2>
+    <p id="result">N/A</p>
+
+    <script>
+        const analyzeForm = document.getElementById("analyze-form");
+        const resultElement = document.getElementById("result");
+
+        analyzeForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const textToAnalyze = document.getElementById("text-to-analyze").value;
+            const response = await fetch("http://localhost:80/analyze", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ text: textToAnalyze }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                resultElement.textContent = `Male-to-Female Ratio: ${data.male_to_female_ratio.toFixed(2)}`;
+            } else {
+                resultElement.textContent = "Error: Unable to process the request";
+            }
+        });
+    </script>
+</body>
+</html>
