@@ -4,18 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manalyzer</title>
+    <!-- Add Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Add custom CSS -->
+    <link rel="stylesheet" href="/static/css/main.css">
 </head>
 <body>
-    <h1>Manalyzer - Gender Mention Ratio</h1>
-    <form id="analyze-form">
-        <label for="text-to-analyze">Enter text to analyze:</label>
-        <br>
-        <textarea id="text-to-analyze" name="text-to-analyze" rows="4" cols="50"></textarea>
-        <br>
-        <button type="submit">Analyze</button>
-    </form>
-    <h2>Result:</h2>
-    <p id="result">N/A</p>
+    <div class="container">
+        <div class="form-container">
+            <h1>Manalyzer - Gender Mention Ratio</h1>
+            <form id="analyze-form">
+                <div class="form-group">
+                    <label for="text-to-analyze">Enter text to analyze:</label>
+                    <textarea class="form-control" id="text-to-analyze" name="text-to-analyze" rows="4"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Analyze</button>
+            </form>
+			<br>
+            <h2>Result:</h2>
+            <p id="result">N/A</p>
+        </div>
+    </div>
+
+    <!-- Add Bootstrap and jQuery JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
     <script>
         const analyzeForm = document.getElementById("analyze-form");
