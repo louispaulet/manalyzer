@@ -7,6 +7,11 @@ from typing import List
 from transformers import pipeline, AutoTokenizer, AutoModelForTokenClassification
 import logging
 import re
+from nltk.tokenize import sent_tokenize
+import nltk
+
+nltk.download("punkt")
+
 
 logging.basicConfig(level=logging.INFO)
 
@@ -29,6 +34,9 @@ class TextToAnalyze(BaseModel):
 class AnalysisResult(BaseModel):
     male_to_female_ratio: float
     female_to_male_ratio: float
+
+class TextAnalysisResult(BaseModel):
+    sentence_list: List[str]
 
 # model_name = "dbmdz/bert-large-cased-finetuned-conll03-english"
 # tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -95,3 +103,10 @@ async def analyze_endpoint(text_to_analyze: TextToAnalyze):
         "male_to_female_ratio": m_ratio,
         "female_to_male_ratio": f_ratio,
     }
+
+@app.post("/text_to_sentences", response_model=TextAnalysisResult)
+async def text_to_sentences_endpoint(text_to_analyze: TextToAnalyze):
+    # Split the input text into sentences using NLTK
+    sentences = sent_tokenize(text_to_analyze.text)
+
+    return {"sentence_list": sentences}

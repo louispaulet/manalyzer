@@ -20,9 +20,12 @@
                 </div>
                 <button type="submit" class="btn btn-primary">Analyze</button>
             </form>
-			<br>
+            <br>
             <h2>Result:</h2>
             <p id="result">N/A</p>
+            <br>
+            <button id="sentences-button" class="btn btn-secondary">Get Sentences</button>
+            <ul id="sentences-list"></ul>
         </div>
     </div>
 
@@ -34,6 +37,8 @@
     <script>
         const analyzeForm = document.getElementById("analyze-form");
         const resultElement = document.getElementById("result");
+        const sentencesButton = document.getElementById("sentences-button");
+        const sentencesList = document.getElementById("sentences-list");
 
         analyzeForm.addEventListener("submit", async (event) => {
             event.preventDefault();
@@ -55,6 +60,28 @@
                 resultElement.textContent = "Error: Unable to process the request";
             }
         });
-    </script>
+
+        sentencesButton.addEventListener("click", async (event) => {
+            event.preventDefault();
+
+            const textToAnalyze = document.getElementById("text-to-analyze").value;
+            const response = await fetch("http://localhost:80/text_to_sentences", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ text: textToAnalyze }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const sentenceList = data.sentence_list.map((sentence) => `<li>${sentence}</li>`).join("");
+                sentencesList.innerHTML = sentenceList;
+            } else {
+                sentencesList.innerHTML = "Error: Unable to process the request";
+}
+});
+</script>
+
 </body>
 </html>
