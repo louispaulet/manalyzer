@@ -38,18 +38,7 @@ class AnalysisResult(BaseModel):
 class TextAnalysisResult(BaseModel):
     sentence_list: List[str]
 
-# model_name = "dbmdz/bert-large-cased-finetuned-conll03-english"
-# tokenizer = AutoTokenizer.from_pretrained(model_name)
-# model = AutoModelForTokenClassification.from_pretrained(model_name)
-# nlp = pipeline("ner", model=model, tokenizer=tokenizer)
-
-
 def count_gender_mentions(text: str) -> int:
-    # entities = nlp(text)
-    # male_mentions = sum([1 for entity in entities if entity['word'].lower() in ('he', 'him', 'his', 'man', 'men', 'gentleman', 'gentlemen')])
-    # female_mentions = sum([1 for entity in entities if
-    # entity['word'].lower() in ('she', 'her', 'hers', 'woman', 'women',
-    # 'lady', 'ladies')])
     male_mentions = sum(
     [
         1 for word in re.findall(
