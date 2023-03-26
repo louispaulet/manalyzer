@@ -79,15 +79,18 @@
                     data.forEach((item) => {
                         const sentenceHash = hashString(item.sentence);
                         const listItem = document.getElementById(sentenceHash);
-                        if (listItem) {
+                        if (listItem && item.label) {
                             listItem.className = item.label.replace(/\s+/g, '-').toLowerCase();
                         }
                     });
                 } else {
                     sentencesList.innerHTML = "Error: Unable to process the request";
                 }
-                }
+            }
         }
+
+
+
         analyzeForm.addEventListener("submit", async (event) => {
         event.preventDefault();
 
