@@ -9,6 +9,9 @@ import logging
 import re
 from nltk.tokenize import sent_tokenize
 import nltk
+import pandas as pd
+from tqdm import tqdm
+tqdm.pandas()
 
 nltk.download("punkt")
 
@@ -37,6 +40,10 @@ class AnalysisResult(BaseModel):
 
 class TextAnalysisResult(BaseModel):
     sentence_list: List[str]
+
+class Sentences(BaseModel):
+    sentences: List[str]
+
 
 def count_gender_mentions(text: str) -> int:
     male_mentions = sum(
@@ -99,3 +106,70 @@ async def text_to_sentences_endpoint(text_to_analyze: TextToAnalyze):
     sentences = sent_tokenize(text_to_analyze.text)
 
     return {"sentence_list": sentences}
+
+
+# ----------------------------------------------------------------------------------------------------------------------------------------
+
+from transformers import pipeline
+
+# Load the zero-shot classification pipeline
+classifier = pipeline("zero-shot-classification", model='facebook/bart-large-mnli', tokenizer='facebook/bart-large-mnli')
+
+
+# filter #1
+label_11 = "human male subject"
+label_12 = "human female subject"
+label_13 = "neutral or inanimate subject"
+label_list_1 = [label_11, label_12, label_13]
+
+# filter #2
+label_21 = "a single male subject"
+label_22 = "a single female subject"
+label_23 = "multiple human subjects"
+label_list_2 = [label_21, label_22, label_23]
+
+def label_gender(sentence_list, label_list):
+  sentence_list_results = classifier(sentence_list, label_list)
+
+  result_list = []
+  for result in sentence_list_results:
+    result_list.append([result["sequence"], result["labels"][0]])
+
+  return pd.DataFrame(result_list, columns=['sentence', 'label'])
+
+def get_final_label(label_x, label_y):
+  if (label_x == label_11) and (label_y == label_21):
+    return label_x
+  elif (label_x == label_12) and (label_y == label_22):
+    return label_x
+  elif(label_x == label_13):
+    return label_x
+  elif(label_y == label_23):
+    return label_y
+  else:
+    'error'
+
+def get_result_df(sentence_list, label_list_1, label_list_2):
+  
+  # phase 1
+  result_df_1 = label_gender(sentence_list, label_list_1)
+  # phase 2
+  result_df_2 = label_gender(sentence_list, label_list_2)
+  result_df = pd.merge(result_df_1, result_df_2, on='sentence')
+  result_df['label'] = result_df.progress_apply(lambda row: get_final_label(row['label_x'], row['label_y']), axis=1)
+  del result_df['label_x']
+  del result_df['label_y']
+    
+  return result_df
+
+# result_list.append(get_result_df(sentence_list, label_list_1, label_list_2))
+
+@app.post("/classify_sentences", response_model=List[dict])
+async def classify_sentences_endpoint(sentences: Sentences):
+    try:
+        result_df = get_result_df(sentences.sentences, label_list_1, label_list_2)
+        result_list = result_df.to_dict(orient="records")
+        return result_list
+    except Exception as e:
+        logging.error(f"Error classifying sentences: {str(e)}")
+        raise HTTPException(status_code=500, detail="An error occurred while classifying sentences")

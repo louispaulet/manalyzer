@@ -40,6 +40,41 @@
         const sentencesButton = document.getElementById("sentences-button");
         const sentencesList = document.getElementById("sentences-list");
 
+        function chunkArray(array, chunkSize) {
+            const chunks = [];
+            for (let i = 0; i < array.length; i += chunkSize) {
+                chunks.push(array.slice(i, i + chunkSize));
+                }
+            return chunks;
+        }
+
+        async function classifySentencesAndDisplay(sentences) {
+            const sentenceBatches = chunkArray(sentences, 4);
+
+            for (const batch of sentenceBatches) {
+                const response = await fetch("http://localhost:80/classify_sentences", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ sentences: batch }),
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const sentenceList = data.map(
+                        (item) =>
+                            `<li class="${item.label.replace(/\s+/g, '-').toLowerCase()}">${item.sentence}</li>`
+                    ).join("");
+                    sentencesList.innerHTML += sentenceList;
+                } else {
+                    sentencesList.innerHTML = "Error: Unable to process the request";
+                }
+            }
+        }
+
+
+
         analyzeForm.addEventListener("submit", async (event) => {
             event.preventDefault();
 
@@ -75,12 +110,14 @@
 
             if (response.ok) {
                 const data = await response.json();
-                const sentenceList = data.sentence_list.map((sentence) => `<li>${sentence}</li>`).join("");
-                sentencesList.innerHTML = sentenceList;
+                const sentenceList = data.sentence_list;
+                sentencesList.innerHTML = ""; // Clear previous content
+                await classifySentencesAndDisplay(sentenceList);
             } else {
                 sentencesList.innerHTML = "Error: Unable to process the request";
-}
-});
+            }
+        });
+
 </script>
 
 </body>
