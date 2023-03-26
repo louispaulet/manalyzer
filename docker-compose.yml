@@ -7,3 +7,4 @@ services:
       - "80:80"
     volumes:
       - "C:/Users/Louis Paulet/projets/femsaas-test/manalyzer:/app"
+      - ./models:/app/models

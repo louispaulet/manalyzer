@@ -25,7 +25,24 @@
             <p id="result">N/A</p>
             <br>
             <button id="sentences-button" class="btn btn-secondary">Get Sentences</button>
-            <button id="classify-button" class="btn btn-secondary">Classify Sentences</button>
+            <!-- <button id="classify-button" class="btn btn-secondary">Classify Sentences</button> -->
+            <button id="classify-button" class="btn btn-secondary" style="display: none;">Classify Sentences</button>
+            <br>
+            <div class="legend-frame">
+                <h4>Legend</h4>
+                <div class="legend-content">
+                    <div class="legend-column">
+                        <p class="human-male-subject"> Human Male Subject </p>
+                        <p class="human-female-subject"> Human Female Subject </p>
+                    </div>
+                    <div class="legend-column">
+                        <p class="neutral-or-inanimate-subject"> Neutral/Inanimate Subject </p>
+                        <p class="multiple-human-subjects"> Multiple Human Subjects </p>
+                    </div>
+                </div>
+            </div> 
+                  
+            
             <ul id="sentences-list"></ul>
         </div>
     </div>
@@ -129,15 +146,15 @@
             sentenceList = data.sentence_list;
             sentencesList.innerHTML = ""; // Clear previous content
             sentencesList.innerHTML = sentenceList.map((sentence) => `<li id="${hashString(sentence)}">${sentence}</li>`).join("");
+            
+            // Call the classifySentencesAndUpdate() function directly
+            await classifySentencesAndUpdate(sentenceList);
         } else {
             sentencesList.innerHTML = "Error: Unable to process the request";
         }
     });
 
-    classifyButton.addEventListener("click", async (event) => {
-        event.preventDefault();
-        await classifySentencesAndUpdate(sentenceList);
-    });
+
 
 </script>
 </body>

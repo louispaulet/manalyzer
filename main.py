@@ -4,13 +4,14 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import List
-from transformers import pipeline, AutoTokenizer, AutoModelForTokenClassification
+from transformers import pipeline, AutoTokenizer, AutoModelForTokenClassification, AutoModelForSequenceClassification
 import logging
 import re
 from nltk.tokenize import sent_tokenize
 import nltk
 import pandas as pd
 from tqdm import tqdm
+import os
 tqdm.pandas()
 
 nltk.download("punkt")
@@ -43,6 +44,24 @@ class TextAnalysisResult(BaseModel):
 
 class Sentences(BaseModel):
     sentences: List[str]
+
+
+def load_model_and_tokenizer(model_name: str, model_dir: str):
+    model_path = os.path.join(model_dir, "pytorch_model.bin")
+    tokenizer_path = os.path.join(model_dir, "tokenizer.json")
+
+    if not (os.path.exists(model_path) and os.path.exists(tokenizer_path)):
+        print("Downloading model and tokenizer from Hugging Face...")
+        model = AutoModelForSequenceClassification.from_pretrained(model_name)
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        model.save_pretrained(model_dir)
+        tokenizer.save_pretrained(model_dir)
+    else:
+        print("Loading model and tokenizer from local folder...")
+        model = AutoModelForSequenceClassification.from_pretrained(model_dir)
+        tokenizer = AutoTokenizer.from_pretrained(model_dir)
+
+    return model, tokenizer
 
 
 def count_gender_mentions(text: str) -> int:
@@ -113,7 +132,12 @@ async def text_to_sentences_endpoint(text_to_analyze: TextToAnalyze):
 from transformers import pipeline
 
 # Load the zero-shot classification pipeline
-classifier = pipeline("zero-shot-classification", model='facebook/bart-large-mnli', tokenizer='facebook/bart-large-mnli')
+# classifier = pipeline("zero-shot-classification", model='facebook/bart-large-mnli', tokenizer='facebook/bart-large-mnli')
+model_name = 'facebook/bart-large-mnli'
+model_dir = '/app/models'
+model, tokenizer = load_model_and_tokenizer(model_name, model_dir)
+classifier = pipeline("zero-shot-classification", model=model, tokenizer=tokenizer)
+
 
 
 # filter #1
