@@ -25,6 +25,7 @@
             <p id="result">N/A</p>
             <br>
             <button id="sentences-button" class="btn btn-secondary">Get Sentences</button>
+            <button id="classify-button" class="btn btn-secondary">Classify Sentences</button>
             <ul id="sentences-list"></ul>
         </div>
     </div>
@@ -38,7 +39,10 @@
         const analyzeForm = document.getElementById("analyze-form");
         const resultElement = document.getElementById("result");
         const sentencesButton = document.getElementById("sentences-button");
+        const classifyButton = document.getElementById("classify-button");
         const sentencesList = document.getElementById("sentences-list");
+
+        let sentenceList = [];
 
         function chunkArray(array, chunkSize) {
             const chunks = [];
@@ -49,7 +53,7 @@
         }
 
         async function classifySentencesAndDisplay(sentences) {
-            const sentenceBatches = chunkArray(sentences, 4);
+            const sentenceBatches = chunkArray(sentences, 1);
 
             for (const batch of sentenceBatches) {
                 const response = await fetch("http://localhost:80/classify_sentences", {
@@ -73,52 +77,54 @@
             }
         }
 
-
-
         analyzeForm.addEventListener("submit", async (event) => {
             event.preventDefault();
 
             const textToAnalyze = document.getElementById("text-to-analyze").value;
             const response = await fetch("http://localhost:80/analyze", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ text: textToAnalyze }),
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                resultElement.innerHTML = `Male-to-Female Ratio: ${data.male_to_female_ratio.toFixed(2)}<br>` +
-                                          `Female-to-Male Ratio: ${data.female_to_male_ratio.toFixed(2)}`;
-            } else {
-                resultElement.textContent = "Error: Unable to process the request";
-            }
+        method: "POST",
+        headers: {
+        "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text: textToAnalyze }),
         });
 
-        sentencesButton.addEventListener("click", async (event) => {
-            event.preventDefault();
+        if (response.ok) {
+            const data = await response.json();
+            resultElement.innerHTML = `Male-to-Female Ratio: ${data.male_to_female_ratio.toFixed(2)}<br>` +
+                                      `Female-to-Male Ratio: ${data.female_to_male_ratio.toFixed(2)}`;
+        } else {
+            resultElement.textContent = "Error: Unable to process the request";
+        }
+    });
 
-            const textToAnalyze = document.getElementById("text-to-analyze").value;
-            const response = await fetch("http://localhost:80/text_to_sentences", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ text: textToAnalyze }),
-            });
+    sentencesButton.addEventListener("click", async (event) => {
+        event.preventDefault();
 
-            if (response.ok) {
-                const data = await response.json();
-                const sentenceList = data.sentence_list;
-                sentencesList.innerHTML = ""; // Clear previous content
-                await classifySentencesAndDisplay(sentenceList);
-            } else {
-                sentencesList.innerHTML = "Error: Unable to process the request";
-            }
+        const textToAnalyze = document.getElementById("text-to-analyze").value;
+        const response = await fetch("http://localhost:80/text_to_sentences", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ text: textToAnalyze }),
         });
+
+        if (response.ok) {
+            const data = await response.json();
+            sentenceList = data.sentence_list;
+            sentencesList.innerHTML = ""; // Clear previous content
+            sentencesList.innerHTML = sentenceList.map((sentence) => `<li>${sentence}</li>`).join("");
+        } else {
+            sentencesList.innerHTML = "Error: Unable to process the request";
+        }
+    });
+
+    classifyButton.addEventListener("click", async (event) => {
+        event.preventDefault();
+        await classifySentencesAndDisplay(sentenceList);
+    });
 
 </script>
-
 </body>
 </html>
